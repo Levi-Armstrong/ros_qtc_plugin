@@ -1,0 +1,6 @@
+libCore 1 qt57creator (>= 4.0.2)
+libCppTools 1 qt57creator (>= 4.0.2)
+libQtSupport 1 qt57creator (>= 4.0.2)
+libUtils 1 qt57creator (>= 4.0.2)
+libExtensionSystem 1 qt57creator (>= 4.0.2)
+libProjectExplorer 1 qt57creator (>= 4.0.2)
