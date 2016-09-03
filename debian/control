@@ -4,7 +4,7 @@ Uploaders: Levi Armstrong <levi.armstrong@gmail.com>
 Section: devel
 Priority: optional
 Build-Depends: debhelper (>= 9),
-               qt57creator (>= 4.0.2),
+               qt57creator (>= 4.1.0),
                libqtermwidget57-0-dev (>= 0.6.0),
 							 wget (>= 1.15),
 							 libgl1-mesa-dev [!armel !armhf] | libgl-dev [!armel !armhf],
@@ -12,15 +12,15 @@ Build-Depends: debhelper (>= 9),
                libglib2.0-dev,
                libglu1-mesa-dev [!armel !armhf] | libglu-dev [!armel !armhf]
 Standards-Version: 3.9.8
-Vcs-Browser: ps://github.com/Levi-Armstrong/ros_qtc_plugin/tree/debian/trusty
-Vcs-Git: ps://github.com/Levi-Armstrong/ros_qtc_plugin.git -b debian/trusty
+Vcs-Browser: ps://github.com/Levi-Armstrong/ros_qtc_plugin/tree/debian/sid
+Vcs-Git: ps://github.com/Levi-Armstrong/ros_qtc_plugin.git -b debian/sid
 Homepage: https://github.com/Levi-Armstrong/ros_qtc_plugin.git
 
 Package: qt57creator-plugin-ros
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         qt57creator ( >= 4.0.2),
+         qt57creator ( >= 4.1.0),
          libqtermwidget57-0 ( >= 0.6.0)
 Pre-Depends: ${misc:Pre-Depends}
 Description: ROS plugin for Qt Creator IDE
