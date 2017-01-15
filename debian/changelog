@@ -1,23 +1,45 @@
+qt57creator-plugin-ros (0.1.4-0trusty2) trusty; urgency=high
+
+  * Version 0.1.4 Ubuntu Trusty Release
+
+  [ Levi Armstrong ]
+  * Add catkin tools build system (#67)
+  * Improve ROS Icon for different themes. (#68)
+  * Update code model to use cached data if build fails (#70)
+  * Remove tool chain include directories from package code model (#71)
+  * Get Cxx Flags from flags.make file (#72)
+  * Add task progress for reading project
+  * Add build task percentage output
+
+  [ Jonathan Meyer ]
+  * Fixed basic urdf file typo and added a simple example of a joint.
+
+ -- Levi Armstrong <levi.armstrong@gmail.com>  Sun, 15 Jan 2017 13:09:08 -0600
+
 qt57creator-plugin-ros (0.1.3-0xenial1) xenial; urgency=high
 
   * Xenial Release for Qt Creator 4.1.0 
 
  -- Levi Armstrong <levi.armstrong@gmail.com>  Tue, 2 Sep 2016 15:20:00 -0500
+
 qt57creator-plugin-ros (0.1.3-0trusty2) trusty; urgency=high
 
   * Trusty Release for Qt Creator 4.1.0 
 
  -- Levi Armstrong <levi.armstrong@gmail.com>  Tue, 2 Sep 2016 15:20:00 -0500
+
 qt57creator-plugin-ros (0.1.2-2trusty1) trusty; urgency=high
 
   * Bump version for trusty release
 
  -- Levi Armstrong <levi.armstrong@gmail.com>  Tue, 13 Aug 2016 15:20:00 -0500
+
 qt57creator-plugin-ros (0.1.2-0xenial2) xenial; urgency=high
 
   * Initial Ubuntu Xenial Release
 
  -- Levi Armstrong <levi.armstrong@gmail.com>  Tue, 13 Aug 2016 15:20:00 -0500
+
 qt57creator-plugin-ros (0.1.2-0trusty2) trusty; urgency=high
 
   * Initial Ubuntu Trusty Release
