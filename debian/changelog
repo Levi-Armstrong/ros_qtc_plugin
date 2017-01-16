@@ -1,3 +1,10 @@
+qt57creator-plugin-ros (0.1.4-0xenial1) xenial; urgency=high
+
+  * Version 0.1.4 Ubuntu Xenial Release
+  * See list of changes below in the trusty release.
+
+ -- Levi Armstrong <levi.armstrong@gmail.com>  Sun, 15 Jan 2017 13:09:08 -0600
+
 qt57creator-plugin-ros (0.1.4-0trusty4) trusty; urgency=high
 
   * Version 0.1.4 Ubuntu Trusty Release
