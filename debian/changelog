@@ -1,15 +1,9 @@
-qt57creator-plugin-ros (0.1.4-0xenial1) xenial; urgency=high
-
-  * Version 0.1.4 Ubuntu Xenial Release
-  * See list of changes below in the trusty release.
-
- -- Levi Armstrong <levi.armstrong@gmail.com>  Sun, 15 Jan 2017 13:09:08 -0600
-
-qt57creator-plugin-ros (0.1.4-0trusty4) trusty; urgency=high
+qt57creator-plugin-ros (0.1.4-0trusty6) trusty; urgency=high
 
   * Version 0.1.4 Ubuntu Trusty Release
 
   [ Levi Armstrong ]
+  * Fix code blocks file locator (#74)
   * Add catkin tools build system (#67)
   * Improve ROS Icon for different themes. (#68)
   * Update code model to use cached data if build fails (#70)
