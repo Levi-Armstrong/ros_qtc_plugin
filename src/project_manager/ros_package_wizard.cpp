@@ -233,7 +233,6 @@ Core::BaseFileWizard *ROSPackageWizard::create(QWidget *parent,
 
     QString defaultPath = parameters.defaultPath();
 
-#ifdef CREATE_FOLDERS
     ROSProject *rosProject = qobject_cast<ROSProject *>(ProjectExplorer::ProjectTree::currentProject());
 
     if( rosProject )
@@ -250,7 +249,6 @@ Core::BaseFileWizard *ROSPackageWizard::create(QWidget *parent,
                 defaultPath = workspaceInfo.sourcePath.toString();
         }
     }
-#endif
 
     m_wizard->setPath(defaultPath);
 
@@ -271,7 +269,7 @@ Core::GeneratedFiles ROSPackageWizard::generateFiles(const QWizard *w,
     Utils::FileName cmakelistPath = Utils::FileName::fromString(m_wizard->packagePath());
 
     packagePath.appendPath(m_wizard->packageName()).appendPath(QLatin1String("package.xml"));
-    cmakelistPath.appendPath(m_wizard->packageName()).appendPath(QLatin1String("CMakeList.txt"));
+    cmakelistPath.appendPath(m_wizard->packageName()).appendPath(QLatin1String("CMakeLists.txt"));
 
     Core::GeneratedFile generatedPackageFile(packagePath.toString());
     generatedPackageFile.setAttributes(Core::GeneratedFile::CustomGeneratorAttribute);
