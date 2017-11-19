@@ -3,3 +3,7 @@
 *.autosave
 setup.log
 _build
+installer/packages/org.rosindustrial.qtros/data/*
+installer/*.run
+installer/config/config.xml
+installer/packages/org.rosindustrial.qtros/meta/package.xml

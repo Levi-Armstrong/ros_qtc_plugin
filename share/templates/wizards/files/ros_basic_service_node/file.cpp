@@ -1,5 +1,7 @@
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include "beginner_tutorials/AddTwoInts.h"
+
+// Mor information at http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29
 
 bool add(beginner_tutorials::AddTwoInts::Request  &req,
          beginner_tutorials::AddTwoInts::Response &res)

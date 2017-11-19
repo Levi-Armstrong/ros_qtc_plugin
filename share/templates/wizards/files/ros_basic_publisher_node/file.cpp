@@ -1,5 +1,7 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+
+// Mor information at http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
 
 int main(int argc, char **argv)
 {
@@ -9,8 +11,8 @@ int main(int argc, char **argv)
   ros::Publisher chatter_pub = nh.advertise<std_msgs::String>("chatter", 1000);
 
   ros::Rate loop_rate(10);
-  while (ros::ok())
-  {
+
+  while (ros::ok()) {
     std_msgs::String msg;
     msg.data = "hello world";
 

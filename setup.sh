@@ -2,6 +2,8 @@
 
 SECONDS=0
 LSB=/usr/bin/lsb_release
+DISTRO=`lsb_release -sc`
+BUILD_TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
 
 RED=
 GREEN=
@@ -38,9 +40,9 @@ PKG_MISSING=""
 QMAKE_PATH="/opt/qt57/bin/qmake"
 
 # ROS qtc plubin default branch
-QTR_BRANCH="master"
+QTR_BRANCH="4.4"
 # QT Creator default branch
-QTC_BRANCH="4.2"
+QTC_BRANCH="v4.4.1"
 
 # By default clean all on rebuild
 #Qt Creator
@@ -55,6 +57,10 @@ QTC_SOURCE=""
 
 QTR_BUILD=""
 QTR_SOURCE=""
+
+QT_SHORTCUT=1
+QT_SHELL=0
+QT_MAKE_PKG="";
 
 # Log file of all actions
 LOG_FILE="${QTR_DIR_PATH}/setup.log"
@@ -120,10 +126,12 @@ function printUsage {
     logP "  -ui           : run setup for users with debug info"
     logP "  -di           : run setup for developers with debug info"
     logP "  -qtb tag      : build qt creator with branch/tag"
-#   logP "  -qtp path: qtcreator path. If provided -qtb is unused"
+    logP "  -qtshell      : enable shell env with qtcreator"
+    logP "  -qtpkg path   : make qt installer. Path to binarycreator v3.0"
     logP "  -qtm path     : qmake path"
     logP "  -no-qtc-clean : skip qt creator \"make clean\""
     logP "  -no-qtr-clean : skip ros qt plugin \"make clean\""
+    logP "  -no-shortcut  : do not create desktop shortcut"
     logP "  -v            : verbose mode"
     logP "Defaults"
     logP "  QTCreator : $QTC_BRANCH"
@@ -264,6 +272,10 @@ function logGitHash {
     logP "== ROS Qt Plugin Git($GIT_HASH)"
 }
 
+function logBuildTime {
+    logP "== Build Time ($BUILD_TIMESTAMP)"
+}
+
 function setParameters {
     if (([ "$1" == "-u" ] || [ "$1" == "-ui" ]) &&
          [ $(basename "$PWD") != 'ros_qtc_plugin' ]); then
@@ -304,12 +316,19 @@ function logRQTEnvironment {
         logV "== QMAKE_PATH      : $QMAKE_PATH"
         logV "== LOG_FILE        : $LOG_FILE"
         logV "== BASE_PATH       : $BASE_PATH"
+        logV "== QT_SHELL        : $QT_SHELL"
+        logV "== QT_MAKE_PKG     : $QT_MAKE_PKG"
+        logP "== QT_SHORTCUT     : $QT_SHORTCUT"
         logV "== QTC_SKIP_CLEAN  : $QTC_SKIP_CLEAN"
         logV "==  QTC_BRANCH     : $QTC_BRANCH"
         logV "==  QTC_PATH       : $QTC_PATH"
         logV "==  QTC_SOURCE     : $QTC_SOURCE"
         logV "==  QTC_BUILD      : $QTC_BUILD"
-        logV "==  DESKTOP_FILE   : $DESKTOP_FILE"
+
+        if [[ $QT_SHORTCUT -eq 1 ]]; then
+          logV "==  DESKTOP_FILE   : $DESKTOP_FILE"
+        fi
+
         logV "== QTR_DIR_PATH    : $QTR_DIR_PATH"
         logV "==  QTR_BRANCH     : $QTR_BRANCH"
         logV "==  QTR_SOURCE     : $QTR_SOURCE"
@@ -463,9 +482,9 @@ function buildROSQtCreatorPlugin {
     fi
 
     if ([ "$RUN_TYPE" == "-u" ] || [ "$RUN_TYPE" == "-d" ]); then
-        CMD="$QMAKE_PATH $QTR_SOURCE/ros_qtc_plugin.pro -r"
+        CMD="$QMAKE_PATH $QTR_SOURCE/ros_qtc_plugin.pro -r BUILD_TIMESTAMP+=${BUILD_TIMESTAMP} QTR_BRANCH+=${QTR_BRANCH} GIT_HASH+=${GIT_HASH}"
     else
-        CMD="$QMAKE_PATH $QTR_SOURCE/ros_qtc_plugin.pro -r CONFIG+=qml_debug CONFIG+=force_debug_info CONFIG+=separate_debug_info"
+        CMD="$QMAKE_PATH $QTR_SOURCE/ros_qtc_plugin.pro -r CONFIG+=qml_debug CONFIG+=force_debug_info CONFIG+=separate_debug_info BUILD_TIMESTAMP+=${BUILD_TIMESTAMP} QTR_BRANCH+=${QTR_BRANCH} GIT_HASH+=${GIT_HASH}"
     fi
 
     [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
@@ -478,7 +497,19 @@ function buildROSQtCreatorPlugin {
     build ros_qtc_plugin
 }
 
-function finalStep {
+function createDesktopIcon {
+    if [[ $QT_SHORTCUT -eq 0 ]]; then
+        return
+    fi
+
+    local QTC_SHELL_VAR;
+
+    if [[ $QT_SHELL -eq 0 ]]; then
+        QTC_SHELL_VAR="$QTC_BUILD/bin/qtcreator"
+    else
+        QTC_SHELL_VAR="/bin/bash -i -c $QTC_BUILD/bin/qtcreator %F"
+    fi
+
     # Create desktop launch icon
     rm -f $DESKTOP_FILE
     > $DESKTOP_FILE
@@ -491,7 +522,7 @@ function finalStep {
     echo 'Name=QtCreator' >> $DESKTOP_FILE
     echo 'Comment=Qt-Creator-'${QTC_BRANCH}' ROS' >> $DESKTOP_FILE
     echo 'NoDisplay=true' >> $DESKTOP_FILE
-    echo 'Exec='$QTC_BUILD/bin/qtcreator >> $DESKTOP_FILE
+    echo 'Exec='$QTC_SHELL_VAR >> $DESKTOP_FILE
     echo 'Icon=QtProject-qtcreator' >> $DESKTOP_FILE
     echo 'Name[en_US]=Qt-Creator-'${QTC_BRANCH}' ROS'  >> $DESKTOP_FILE
     chmod +x $DESKTOP_FILE
@@ -504,11 +535,84 @@ function finalStep {
 
     # Create user command line launch
     logP "== Adding QtCreator-${QTC_BRANCH}-ROS command line launcher: /usr/local/bin/qtcreator-${QTC_BRANCH}-ROS"
-    sudo rm -f /usr/local/bin/qtcreator-${QTC_BRANCH}-ROS
-
+    sudo rm -f /usr/local/bin/qtcreator-${QTC_BRANCH}-ROS &>> /dev/null
     sudo ln -s $QTC_BUILD/bin/qtcreator /usr/local/bin/qtcreator-${QTC_BRANCH}-ROS
 
     testForError
+}
+
+function checkForQtInstaller {
+    if [ -z "$QT_MAKE_PKG" ]; then
+        return
+    fi
+
+    logP "=="
+    logP "== Checking QT Installer"
+
+    if [[ -x "$QT_MAKE_PKG/binarycreator" ]]; then
+        logP "== Found QT Installer"
+    else
+        logErrorAndQuit "Failed to find $QT_MAKE_PKG/binarycreator. Please use Qt MaintenanceTool to install QtInstallerFramework 3.0 and try again"
+    fi
+}
+
+function prepareInstallerFiles {
+    logP "== Prepering Installer Files"
+
+    # Remove old files
+    CMD="rm -rf $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/*"
+    [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
+
+    $CMD &>> "$LOG_FILE"
+
+    # Create destination lib foder
+    CMD="mkdir -p $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/share/qtcreator/ $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/lib/qtcreator/plugins/"
+    [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
+
+    $CMD &>> "$LOG_FILE"
+
+
+    # Copy new Files
+    CMD="cp -R $QTR_DIR_PATH/share/* $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/share/qtcreator/"
+    [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
+
+    $CMD &>> "$LOG_FILE"
+
+    # Remove pro file
+    CMD="rm $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/share/qtcreator/share.pro"
+    [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
+
+    $CMD &>> "$LOG_FILE"
+
+    # Copy Library
+    CMD="cp $QTC_BUILD/lib/qtcreator/plugins/libMacros.so* $QTR_DIR_PATH/installer/packages/org.rosindustrial.qtros/data/lib/qtcreator/plugins/"
+    [[ $VERBOSE -eq 1 ]] && logV "==  $CMD"
+
+    $CMD &>> "$LOG_FILE"
+}
+
+function createQtInstallPackage {
+
+    if [ -z "$QT_MAKE_PKG" ]; then
+        return;
+    fi
+
+    logP "=="
+    logP "== Creating QT Installation Package"
+    cd $QTR_DIR_PATH/installer
+
+    prepareInstallerFiles
+
+    local QTC_PKG_NAME="ros-plugin-qtcreator-${QTC_BRANCH}-${DISTRO}.run"
+    CMD="${QT_MAKE_PKG}/binarycreator --offline-only -c config/config.xml -p packages ${QTC_PKG_NAME}"
+
+    [[ ${VERBOSE} -eq 1 ]] && logV "==  ${CMD}"
+
+    ${CMD} &>> "${LOG_FILE}"
+
+    testForError
+
+    logP "== ${QTC_PKG_NAME} created in `pwd`"
 }
 
 deleteLog
@@ -520,16 +624,19 @@ fi
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -u)             RUN_TYPE="$1";   shift 1;;
-    -d)             RUN_TYPE="$1";   shift 1;;
-    -ui)            RUN_TYPE="$1";   shift 1;;
-    -di)            RUN_TYPE="$1";   shift 1;;
-    -qtm)           QMAKE_PATH="$2"; shift 2;;
-    -qtb)           QTC_BRANCH="$2"; shift 2;;
+    -u)             RUN_TYPE="$1";    shift 1;;
+    -d)             RUN_TYPE="$1";    shift 1;;
+    -ui)            RUN_TYPE="$1";    shift 1;;
+    -di)            RUN_TYPE="$1";    shift 1;;
+    -qtm)           QMAKE_PATH="$2";  shift 2;;
+    -qtb)           QTC_BRANCH="$2";  shift 2;;
+    -qtpkg)         QT_MAKE_PKG="$2"; shift 2;;
+    -qtshell)       QT_SHELL=1;       shift 1;;
     -no-qtc-clean)  QTC_SKIP_CLEAN=1; shift 1;;
     -no-qtr-clean)  QTR_SKIP_CLEAN=1; shift 1;;
-    -qtp)           QTC_PATH="$2";   shift 2;;
-    -v)             VERBOSE=1;       shift 1;;
+    -no-shortcut)   QT_SHORTCUT=0;    shift 1;;
+    -qtp)           QTC_PATH="$2";    shift 2;;
+    -v)             VERBOSE=1;        shift 1;;
     *)              logGitHash
                     logE "== Unknown $1 parameter!!!";
                     printUsage;;
@@ -548,8 +655,10 @@ fi
 # Change to working folder where we did run setup.sh from
 cd $QTR_DIR_PATH
 logP "== Output redirected to setup.log"
+checkForQtInstaller
 setParameters
 logGitHash
+logBuildTime
 checkPkgDependency
 checkParameters
 logOSInfo
@@ -561,7 +670,8 @@ if [ -z $QTC_PATH ]; then
 fi
 
 buildROSQtCreatorPlugin
-finalStep
+createQtInstallPackage
+createDesktopIcon
 
 logP "=="
 logP "== Success!!! Happy ROSing"
