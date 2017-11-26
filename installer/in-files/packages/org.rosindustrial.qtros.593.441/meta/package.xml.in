@@ -1,0 +1,15 @@
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Package>
+    <DisplayName>ROS Qt Creator Plug-in</DisplayName>
+    <Description>Install ROS Qt Creator Plug-in</Description>
+    <Version>$$QTR_BRANCH</Version>
+    <ReleaseDate>$$BUILD_TIMESTAMP</ReleaseDate>
+    <Licenses>
+        <License name=\"Public License Agreement\" file=\"license.txt\" />
+    </Licenses>
+    <Default>script</Default>
+    <Script>installscript.qs</Script>
+    <UserInterfaces>
+        <UserInterface>page.ui</UserInterface>
+    </UserInterfaces>
+</Package>

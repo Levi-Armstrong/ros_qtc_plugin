@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>ROS Qt Creator Plug-in</Name>
+    <Version>0.1.1</Version>
+    <Title>ROS Qt Creator Plug-in</Title>
+    <Publisher>ROS-Industrial</Publisher>
+    <StartMenuDir>ROS Qt Creator Plug-in</StartMenuDir>
+    <TargetDir>@HomeDir@/QtCreator</TargetDir>
+</Installer>

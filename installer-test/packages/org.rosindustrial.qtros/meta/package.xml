@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Qt Creator for ROS</DisplayName>
+    <Description>Install Qt Creator for ROS Development</Description>
+    <Version>1.8.0</Version>
+    <ReleaseDate>2018-11-22</ReleaseDate>
+    <Licenses>
+        <License name="Public License Agreement" file="license.txt" />
+    </Licenses>
+    <UserInterfaces>
+        <UserInterface>page.ui</UserInterface>
+    </UserInterfaces>
+    <Checkable>false</Checkable>
+</Package>

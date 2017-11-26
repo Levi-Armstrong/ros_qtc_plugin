@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Qt Creator 4.3.1</DisplayName>
+    <Description>Qt Creator 4.3.1</Description>
+    <Version>4.3.1</Version>
+    <ReleaseDate>2018-11-22</ReleaseDate>
+    <Checkable>True</Checkable>
+</Package>
