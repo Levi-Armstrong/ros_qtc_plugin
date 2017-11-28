@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Package>
-    <DisplayName>ROS Qt Creator Plug-in</DisplayName>
-    <Description>Install ROS Qt Creator Plug-in</Description>
-    <Version>4.4.1</Version>
-    <ReleaseDate>2018-11-22</ReleaseDate>
-    <Checkable>False</Checkable>
-</Package>

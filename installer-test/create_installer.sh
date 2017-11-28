@@ -22,16 +22,18 @@ function logP {
     echo -e "$1" >> "$LOG_FILE" # No color to log file
 }
 
-function createInstallerData {
-	# Get Major Version
+# Absolute path to this setup.sh script: create_installer.sh
+SCRIPT_FILE_PATH=$(readlink -f $0)
+# Absolute path to this setup.sh script
+INSTALLER_DIR_PATH=`dirname $SCRIPT_FILE_PATH`
+BASE_PACKAGE_NAME=org.rosindustrial.qtros
+
+function init {
+    # Get Major Version
 	PVersion=(`echo $QTC_MINOR_VERSION | tr '.' ' '`)
 	QTC_MAJOR_VERSION=${PVersion[0]}.${PVersion[1]}
-
-	# Absolute path to this setup.sh script: create_installer.sh
-	SCRIPT_FILE_PATH=$(readlink -f $0)
-	# Absolute path to this setup.sh script
-	INSTALLER_DIR_PATH=`dirname $SCRIPT_FILE_PATH`
-
+    PACKAGE_NAME=${PVersion[0]}${PVersion[1]}${PVersion[2]}
+    
     # remove directories that may exist
     rm -rf /tmp/$QTC_MINOR_VERSION
     rm -rf /tmp/ros_qtc_plugin
@@ -39,7 +41,112 @@ function createInstallerData {
     rm -rf /tmp/qtcreator
     rm -rf /tmp/qtcreator_dev
     rm -rf /tmp/qtcreator_ros_plugin
+}
 
+function createConfig {
+    mkdir -p $INSTALLER_DIR_PATH/config/
+    cp $INSTALLER_DIR_PATH/logo.png $INSTALLER_DIR_PATH/config/logo.png
+    cp $INSTALLER_DIR_PATH/watermark.png $INSTALLER_DIR_PATH/config/watermark.png
+
+cat > $INSTALLER_DIR_PATH/config/config.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Qt Creator with ROS Plug-in</Name>
+    <Version>$INSTALLER_VERSION</Version>
+    <Title>Qt Creator with ROS Plug-in</Title>
+    <Publisher>Qt Project and ROS-Industrial</Publisher>
+
+    <InstallerWindowIcon>logo.png</InstallerWindowIcon>
+    <Watermark>watermark.png</Watermark>
+    <WizardDefaultHeight>520</WizardDefaultHeight>
+    <MaintenanceToolName>QtCreatorUninstaller</MaintenanceToolName>
+    <TargetDir>@HomeDir@/QtCreator</TargetDir>
+</Installer>
+EOF
+}
+
+function createRootPackage {
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta
+    cp $INSTALLER_DIR_PATH/LICENSE.GPL3-EXCEPT $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/LICENSE.GPL3-EXCEPT
+    cp $INSTALLER_DIR_PATH/LICENSE.APACHE $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/LICENSE.APACHE
+    cp $INSTALLER_DIR_PATH/page.ui $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/page.ui
+
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/package.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Qt Creator for ROS</DisplayName>
+    <Description>Install Qt Creator for ROS Development</Description>
+    <Version>$INSTALLER_VERSION</Version>
+    <ReleaseDate>$INSTALLER_RELEASE_DATE</ReleaseDate>
+    <Licenses>
+        <License name="GNU GPL version 3 (with exception clauses)" file="LICENSE.GPL3-EXCEPT" />
+        <License name="Apache License, Version 2.0" file="LICENSE.APACHE" />
+    </Licenses>
+    <UserInterfaces>
+        <UserInterface>page.ui</UserInterface>
+    </UserInterfaces>
+    <Checkable>false</Checkable>
+</Package>
+EOF
+}
+
+function createVersionPackage {
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta
+
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Qt Creator $QTC_MINOR_VERSION</DisplayName>
+    <Description>Installs the Qt Creator IDE with ROS Plug-in</Description>
+    <Version>$RQTC_MINOR_VERSION</Version>
+    <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
+    <Name>org.rosindustrial.qtros.$PACKAGE_NAME</Name>
+    <Checkable>true</Checkable>
+</Package>
+EOF
+}
+
+function createQtCreatorPackage {
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data
+
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/package.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Qt Creator</DisplayName>
+    <Description>Installs the Qt Creator IDE</Description>
+    <Version>$QTC_MINOR_VERSION</Version>
+    <ReleaseDate>$QTC_RELEASE_DATE</ReleaseDate>
+    <Name>org.rosindustrial.qtros.$PACKAGE_NAME.qtc</Name>
+    <Checkable>false</Checkable>
+</Package>
+EOF
+}
+
+function createROSQtCreatorPluginPackage {
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/data
+
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/package.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>ROS Qt Creator Plug-in</DisplayName>
+    <Description>Installs the ROS Qt Creator Plug-in</Description>
+    <Version>$RQTC_MINOR_VERSION</Version>
+    <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
+    <Name>org.rosindustrial.qtros.$PACKAGE_NAME.rqtc</Name>
+    <Checkable>false</Checkable>
+</Package>
+EOF
+}
+
+function createPackage {
+    createVersionPackage
+    createQtCreatorPackage
+    createROSQtCreatorPluginPackage
+}
+
+function createInstallerData {
 	export QTC_SOURCE=/tmp/$QTC_MINOR_VERSION
 	export QTC_BUILD=/tmp/$QTC_MINOR_VERSION
 
@@ -48,11 +155,21 @@ function createInstallerData {
 
     # Download the version of Qt Creator from Qt
 	wget https://download.qt.io/official_releases/qtcreator/$QTC_MAJOR_VERSION/$QTC_MINOR_VERSION/installer_source/linux_gcc_64_rhel72/qtcreator.7z
-	wget https://download.qt.io/official_releases/qtcreator/$QTC_MAJOR_VERSION/$QTC_MINOR_VERSION/installer_source/linux_gcc_64_rhel72/qtcreator_dev.7z
-
-    # Extract the Data
+	
+    # Extract Qt Creator Data
 	7zr x -bd qtcreator.7z
+    rm qtcreator.7z 
+
+    # Package Qt Creator
+    rm $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data/qtcreator.7z
+	cd /tmp
+	7zr a -r qtcreator.7z $QTC_MINOR_VERSION
+	mv qtcreator.7z $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data
+
+    cd /tmp/$QTC_MINOR_VERSION
+    wget https://download.qt.io/official_releases/qtcreator/$QTC_MAJOR_VERSION/$QTC_MINOR_VERSION/installer_source/linux_gcc_64_rhel72/qtcreator_dev.7z
 	7zr x -y -bd qtcreator_dev.7z
+    rm qtcreator_dev.7z
 	 
 	# Clone the ROS Qt Creator Plugin
 	cd /tmp
@@ -65,34 +182,10 @@ function createInstallerData {
 	make -j8
 
 	# Next we must change the rpath to use the local Qt Libraries that get copied into the Qt Creator Directory
-	chrpath -r \$\ORIGIN:\$\ORIGIN/..:\$\ORIGIN/../lib/qtcreator:\$\ORIGIN/../../Qt/lib /tmp/$QTC_MINOR_VERSION/lib/qtcreator/plugins/libROSProjectManager.so
-
-	# Now to repackage everything for the installer
-    
-    # Package Qt Creator
-    rm $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.qtc/data/qtcreator.7z
-	mkdir -p /tmp/qtcreator/$QTC_MINOR_VERSION
-	cd /tmp/qtcreator/$QTC_MINOR_VERSION
-	cp /tmp/$QTC_MINOR_VERSION/qtcreator.7z .
-	7zr x -bd qtcreator.7z
-	rm qtcreator.7z
-	cd /tmp/qtcreator
-	7zr a -r qtcreator.7z $QTC_MINOR_VERSION
-	mv qtcreator.7z $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.qtc/data
-
-    # Package Qt Creator Source
-    rm $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.qtc/data/qtcreator_dev.7z
-	mkdir -p /tmp/qtcreator_dev/$QTC_MINOR_VERSION
-	cd /tmp/qtcreator_dev/$QTC_MINOR_VERSION
-	cp /tmp/$QTC_MINOR_VERSION/qtcreator_dev.7z .
-	7zr x -bd qtcreator_dev.7z
-	rm qtcreator_dev.7z
-	cd /tmp/qtcreator_dev
-	7zr a -r qtcreator_dev.7z $QTC_MINOR_VERSION
-	mv qtcreator_dev.7z $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.qtc/data
+	chrpath -r \$\ORIGIN:\$\ORIGIN/..:\$\ORIGIN/../lib/qtcreator:\$\ORIGIN/../../Qt/lib /tmp/$QTC_MINOR_VERSION/lib/qtcreator/plugins/libROSProjectManager.so  
 
     # Package ROS Qt Creator Plugin
-    rm $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.rqtc/data/qtcreator_ros_plugin.7z
+    rm $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/data/qtcreator_ros_plugin.7z
 	mkdir -p /tmp/qtcreator_ros_plugin/$QTC_MINOR_VERSION/lib/qtcreator/plugins
 	cd /tmp/qtcreator_ros_plugin/$QTC_MINOR_VERSION/lib/qtcreator/plugins
 	cp /tmp/$QTC_MINOR_VERSION/lib/qtcreator/plugins/libROSProjectManager.so .
@@ -102,20 +195,36 @@ function createInstallerData {
 	cp -r /tmp/ros_qtc_plugin/share/templates .
 	cd /tmp/qtcreator_ros_plugin
 	7zr a -r qtcreator_ros_plugin.7z $QTC_MINOR_VERSION
-	mv qtcreator_ros_plugin.7z $INSTALLER_DIR_PATH/packages/org.rosindustrial.qtros.${PVersion[0]}${PVersion[1]}${PVersion[2]}.rqtc/data
+	mv qtcreator_ros_plugin.7z $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/data
 }
+
+# Installer Data
+INSTALLER_VERSION=1.0.0
+INSTALLER_RELEASE_DATE=2018-11-27
+createConfig
+createRootPackage
 
 # Create Installer data for version 4.4.1
 logP "Create Installer data for version 4.4.1"
 QTC_MINOR_VERSION=4.4.1
+QTC_RELEASE_DATE=2017-10-04
+RQTC_MINOR_VERSION=1.8.1
+RQTC_RELEASE_DATE=2018-11-22
 QMAKE_PATH="/home/larmstrong/Qt5.9.2/5.9.2/gcc_64/bin/qmake" # This must be the same version used for qtcreator.7z and qtcreator_dev.7z
+init
+createPackage
 createInstallerData
 logP "Finished Creating Installer data for version 4.4.1"
 
 # Create Installer data for version 4.3.1
 logP "Create Installer data for version 4.3.1"
 QTC_MINOR_VERSION=4.3.1
+QTC_RELEASE_DATE=2017-06-29
+RQTC_MINOR_VERSION=1.7.1
+RQTC_RELEASE_DATE=2018-11-22
 QMAKE_PATH="/home/larmstrong/Qt5.9.1/5.9.1/gcc_64/bin/qmake" # This must be the same version used for qtcreator.7z and qtcreator_dev.7z
+init
+createPackage
 createInstallerData
 logP "Finished Creating Installer data for version 4.3.1"
 
