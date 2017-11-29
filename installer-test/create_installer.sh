@@ -32,7 +32,18 @@ function init {
     # Get Major Version
 	PVersion=(`echo $QTC_MINOR_VERSION | tr '.' ' '`)
 	QTC_MAJOR_VERSION=${PVersion[0]}.${PVersion[1]}
-    PACKAGE_NAME=${PVersion[0]}${PVersion[1]}${PVersion[2]}
+
+    if [ $QTC_LATEST -eq 1 ]; then
+        PACKAGE_NAME=latest
+        PACKAGE_DISPLAY_NAME="Qt Creator (latest)"
+        QTC_DISPLAY_NAME="Qt Creator ($QTC_MINOR_VERSION)"
+        CHECKBOX_DEFAULT=true
+    else
+        PACKAGE_NAME=${PVersion[0]}${PVersion[1]}${PVersion[2]}
+        PACKAGE_DISPLAY_NAME="Qt Creator ($QTC_MINOR_VERSION)"
+        QTC_DISPLAY_NAME="Qt Creator"
+        CHECKBOX_DEFAULT=false
+    fi
     
     # remove directories that may exist
     rm -rf /tmp/$QTC_MINOR_VERSION
@@ -90,22 +101,6 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/package.xml << EOF
 EOF
 }
 
-function createVersionPackage {
-    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta
-
-cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package.xml << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Package>
-    <DisplayName>Qt Creator $QTC_MINOR_VERSION</DisplayName>
-    <Description>Installs the Qt Creator IDE with ROS Plug-in</Description>
-    <Version>$RQTC_MINOR_VERSION</Version>
-    <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
-    <Name>org.rosindustrial.qtros.$PACKAGE_NAME</Name>
-    <Checkable>true</Checkable>
-</Package>
-EOF
-}
-
 function createQtCreatorPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data
@@ -113,11 +108,12 @@ function createQtCreatorPackage {
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-    <DisplayName>Qt Creator</DisplayName>
+    <DisplayName>$QTC_DISPLAY_NAME</DisplayName>
     <Description>Installs the Qt Creator IDE</Description>
     <Version>$QTC_MINOR_VERSION</Version>
     <ReleaseDate>$QTC_RELEASE_DATE</ReleaseDate>
     <Name>org.rosindustrial.qtros.$PACKAGE_NAME.qtc</Name>
+    <Script>installscript.qs</Script>
     <Checkable>false</Checkable>
 </Package>
 EOF
@@ -130,7 +126,7 @@ function createROSQtCreatorPluginPackage {
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-    <DisplayName>ROS Qt Creator Plug-in</DisplayName>
+    <DisplayName>ROS Plug-in ($RQTC_MINOR_VERSION)</DisplayName>
     <Description>Installs the ROS Qt Creator Plug-in</Description>
     <Version>$RQTC_MINOR_VERSION</Version>
     <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
@@ -140,11 +136,50 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/pa
 EOF
 }
 
+function createInstallScript {
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/installscript.qs << EOF
+function Component()
+{
+}
+
+Component.prototype.createOperations = function()
+{
+    // Call the base createOperations and afterwards set some registry settings
+    component.createOperations();
+    if ( installer.value("os") == "x11" )
+    {
+        component.addOperation( "InstallIcons", "@TargetDir@/$QTC_MINOR_VERSION/share/icons" );
+        component.addOperation( "CreateDesktopEntry",
+                                "QtProject-qtcreator-ros-$PACKAGE_NAME.desktop",
+                                "Type=Application\nExec=" +  installer.value("TargetDir") + "/$QTC_MINOR_VERSION/bin/qtcreator\nPath=@TargetDir@/$QTC_MINOR_VERSION\nName=Qt Creator ($QTC_MINOR_VERSION)\nGenericName=The IDE of choice for Qt development.\nGenericName[de]=Die IDE der Wahl zur Qt Entwicklung\nIcon=QtProject-qtcreator\nTerminal=false\nCategories=Development;IDE;Qt;\nMimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.qt.qmakeprofile;application/vnd.qt.xml.resource;text/x-qml;text/x-qt.qml;text/x-qt.qbs;"
+                                );
+    }
+}
+EOF
+}
+
 function createPackage {
-    createVersionPackage
+    mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta
+    
+cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>$PACKAGE_DISPLAY_NAME</DisplayName>
+    <Description>Installs the Qt Creator IDE with ROS Plug-in</Description>
+    <Version>$RQTC_MINOR_VERSION</Version>
+    <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
+    <Name>org.rosindustrial.qtros.$PACKAGE_NAME</Name>
+    <SortingPriority>$SortingPriority</SortingPriority>
+    <Default>$CHECKBOX_DEFAULT</Default>
+</Package>
+EOF
+
     createQtCreatorPackage
     createROSQtCreatorPluginPackage
+    createInstallScript
 }
+
+
 
 function createInstallerData {
 	export QTC_SOURCE=/tmp/$QTC_MINOR_VERSION
@@ -159,6 +194,8 @@ function createInstallerData {
     # Extract Qt Creator Data
 	7zr x -bd qtcreator.7z
     rm qtcreator.7z 
+
+    # May need to create a symbolic link with version of qtcreator binary to allow multiple versions.
 
     # Package Qt Creator
     rm $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data/qtcreator.7z
@@ -204,24 +241,32 @@ INSTALLER_RELEASE_DATE=2018-11-27
 createConfig
 createRootPackage
 
-# Create Installer data for version 4.4.1
-logP "Create Installer data for version 4.4.1"
+# Create Installer data for latest versions
+logP "Create Installer data for latest version 4.4.1"
+QTC_LATEST=1
 QTC_MINOR_VERSION=4.4.1
 QTC_RELEASE_DATE=2017-10-04
-RQTC_MINOR_VERSION=1.8.1
+RQTC_MINOR_VERSION=0.1.8
 RQTC_RELEASE_DATE=2018-11-22
+SortingPriority=200
 QMAKE_PATH="/home/larmstrong/Qt5.9.2/5.9.2/gcc_64/bin/qmake" # This must be the same version used for qtcreator.7z and qtcreator_dev.7z
 init
 createPackage
 createInstallerData
-logP "Finished Creating Installer data for version 4.4.1"
+logP "Finished Creating Installer data for latest version 4.4.1"
+
+#################################################################################################
+# The package below this point are provided as archives incase someone need a specific version. #
+#################################################################################################
+QTC_LATEST=0
 
 # Create Installer data for version 4.3.1
 logP "Create Installer data for version 4.3.1"
 QTC_MINOR_VERSION=4.3.1
 QTC_RELEASE_DATE=2017-06-29
-RQTC_MINOR_VERSION=1.7.1
+RQTC_MINOR_VERSION=0.1.6
 RQTC_RELEASE_DATE=2018-11-22
+SortingPriority=50
 QMAKE_PATH="/home/larmstrong/Qt5.9.1/5.9.1/gcc_64/bin/qmake" # This must be the same version used for qtcreator.7z and qtcreator_dev.7z
 init
 createPackage
