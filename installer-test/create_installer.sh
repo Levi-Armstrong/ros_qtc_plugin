@@ -27,6 +27,7 @@ SCRIPT_FILE_PATH=$(readlink -f $0)
 # Absolute path to this setup.sh script
 INSTALLER_DIR_PATH=`dirname $SCRIPT_FILE_PATH`
 BASE_PACKAGE_NAME=org.rosindustrial.qtros
+OFFLINE_PACKAGES=$BASE_PACKAGE_NAME
 
 function init {
     # Get Major Version
@@ -72,6 +73,13 @@ cat > $INSTALLER_DIR_PATH/config/config.xml << EOF
     <WizardDefaultHeight>520</WizardDefaultHeight>
     <MaintenanceToolName>QtCreatorUninstaller</MaintenanceToolName>
     <TargetDir>@HomeDir@/QtCreator</TargetDir>
+    <RemoteRepositories>
+         <Repository>
+                 <Url>https://aeswiki.datasys.swri.edu/home/levi/qtcreator_ros/downloads/packages/Updates.xml</Url>
+                 <Enabled>1</Enabled>
+                 <DisplayName>Qt Creator with ROS Plug-in</DisplayName>
+         </Repository>
+    </RemoteRepositories>
 </Installer>
 EOF
 }
@@ -81,7 +89,7 @@ function createRootPackage {
     cp $INSTALLER_DIR_PATH/LICENSE.GPL3-EXCEPT $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/LICENSE.GPL3-EXCEPT
     cp $INSTALLER_DIR_PATH/LICENSE.APACHE $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/LICENSE.APACHE
     cp $INSTALLER_DIR_PATH/page.ui $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/page.ui
-
+ 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
@@ -104,6 +112,7 @@ EOF
 function createQtCreatorPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data
+    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc
 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -113,6 +122,7 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/pac
     <Version>$QTC_MINOR_VERSION</Version>
     <ReleaseDate>$QTC_RELEASE_DATE</ReleaseDate>
     <Name>org.rosindustrial.qtros.$PACKAGE_NAME.qtc</Name>
+    <Dependencies>$BASE_PACKAGE_NAME.$PACKAGE_NAME</Dependencies>
     <Script>installscript.qs</Script>
     <Checkable>false</Checkable>
 </Package>
@@ -122,6 +132,7 @@ EOF
 function createROSQtCreatorPluginPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/data
+    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc
 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -131,6 +142,7 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/pa
     <Version>$RQTC_MINOR_VERSION</Version>
     <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
     <Name>org.rosindustrial.qtros.$PACKAGE_NAME.rqtc</Name>
+    <Dependencies>$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc</Dependencies>
     <Checkable>false</Checkable>
 </Package>
 EOF
@@ -160,7 +172,8 @@ EOF
 
 function createPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta
-    
+    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME
+
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
@@ -169,6 +182,7 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package
     <Version>$RQTC_MINOR_VERSION</Version>
     <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
     <Name>org.rosindustrial.qtros.$PACKAGE_NAME</Name>
+    <Dependencies>$BASE_PACKAGE_NAME</Dependencies>
     <SortingPriority>$SortingPriority</SortingPriority>
     <Default>$CHECKBOX_DEFAULT</Default>
 </Package>
@@ -275,5 +289,8 @@ logP "Finished Creating Installer data for version 4.3.1"
 
 # Create binary 
 cd $INSTALLER_DIR_PATH
-/home/larmstrong/QtIFW-3.0.2/bin/binarycreator --offline-only -c config/config.xml -p packages qtcreator-ros.run
+/home/larmstrong/QtIFW-3.0.2/bin/binarycreator -f -c config/config.xml -p packages qtcreator-ros-offline-installer.run
 
+echo "Commands for updating and creating the online installer"
+echo "repogen -p /home/larmstrong/qtc_plugins/ros_qtc_plugin/installer-test/packages/ -i $OFFLINE_PACKAGES ."
+echo "binarycreator -c config/config.xml -n -p packages qtcreator-ros-online-installer.run"
