@@ -76,7 +76,7 @@ cat > $INSTALLER_DIR_PATH/config/config.xml << EOF
     <TargetDir>@HomeDir@/QtCreator</TargetDir>
     <RemoteRepositories>
          <Repository>
-                 <Url>https://aeswiki.datasys.swri.edu/home/levi/qtcreator_ros/downloads/packages/Updates.xml</Url>
+                 <Url>https://aeswiki.datasys.swri.edu/qtcreator_ros/downloads/packages</Url>
                  <Enabled>1</Enabled>
                  <DisplayName>Qt Creator with ROS Plug-in</DisplayName>
          </Repository>
@@ -298,3 +298,4 @@ cd $INSTALLER_DIR_PATH
 
 echo "Commands for updating server"
 echo "repogen -p /home/larmstrong/qtc_plugins/ros_qtc_plugin/installer-test/packages/ ."
+echo "Make sure to remove execution bit for all: chmod -x+X -R *"
