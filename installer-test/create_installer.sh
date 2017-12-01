@@ -38,11 +38,13 @@ function init {
         PACKAGE_DISPLAY_NAME="Qt Creator (latest)"
         QTC_DISPLAY_NAME="Qt Creator ($QTC_MINOR_VERSION)"
         CHECKBOX_DEFAULT=true
+        COMMANDLINE_NAME="qtcreator-ros"
     else
         PACKAGE_NAME=${PVersion[0]}${PVersion[1]}${PVersion[2]}
         PACKAGE_DISPLAY_NAME="Qt Creator ($QTC_MINOR_VERSION)"
         QTC_DISPLAY_NAME="Qt Creator"
         CHECKBOX_DEFAULT=false
+        COMMANDLINE_NAME="qtcreator-ros-$PACKAGE_NAME"
     fi
     
     # remove directories that may exist
@@ -157,11 +159,17 @@ Component.prototype.createOperations = function()
     component.createOperations();
     if ( installer.value("os") == "x11" )
     {
+        component.addOperation("CreateLink", "@HomeDir@/.local/bin/$COMMANDLINE_NAME", "@TargetDir@/$QTC_MINOR_VERSION/bin/qtcreator");
+        component.addOperation("CreateLink", "@TargetDir@/$QTC_MINOR_VERSION/bin/$COMMANDLINE_NAME", "@TargetDir@/$QTC_MINOR_VERSION/bin/qtcreator");
+
+
         component.addOperation( "InstallIcons", "@TargetDir@/$QTC_MINOR_VERSION/share/icons" );
         component.addOperation( "CreateDesktopEntry",
                                 "QtProject-qtcreator-ros-$PACKAGE_NAME.desktop",
-                                "Type=Application\nExec=" +  installer.value("TargetDir") + "/$QTC_MINOR_VERSION/bin/qtcreator\nPath=@TargetDir@/$QTC_MINOR_VERSION\nName=Qt Creator ($QTC_MINOR_VERSION)\nGenericName=The IDE of choice for Qt development.\nGenericName[de]=Die IDE der Wahl zur Qt Entwicklung\nIcon=QtProject-qtcreator\nTerminal=false\nCategories=Development;IDE;Qt;\nMimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.qt.qmakeprofile;application/vnd.qt.xml.resource;text/x-qml;text/x-qt.qml;text/x-qt.qbs;"
+                                "Type=Application\nExec=@TargetDir@/$QTC_MINOR_VERSION/bin/$COMMANDLINE_NAME\nPath=@TargetDir@/$QTC_MINOR_VERSION\nName=Qt Creator ($QTC_MINOR_VERSION)\nGenericName=The IDE of choice for Qt development.\nGenericName[de]=Die IDE der Wahl zur Qt Entwicklung\nIcon=QtProject-qtcreator\nTerminal=false\nCategories=Development;IDE;Qt;\nMimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.qt.qmakeprofile;application/vnd.qt.xml.resource;text/x-qml;text/x-qt.qml;text/x-qt.qbs;"
                                 );
+
+        component.addOperation("CreateLink", "@HomeDir@/Desktop/QtProject-qtcreator-ros-$PACKAGE_NAME.desktop", "@HomeDir@/.local/share/applications/QtProject-qtcreator-ros-$PACKAGE_NAME.desktop");
     }
 }
 EOF
