@@ -27,7 +27,6 @@ SCRIPT_FILE_PATH=$(readlink -f $0)
 # Absolute path to this setup.sh script
 INSTALLER_DIR_PATH=`dirname $SCRIPT_FILE_PATH`
 BASE_PACKAGE_NAME=org.rosindustrial.qtros
-OFFLINE_PACKAGES=$BASE_PACKAGE_NAME
 
 function init {
     # Get Major Version
@@ -112,7 +111,6 @@ EOF
 function createQtCreatorPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/data
-    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc
 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -132,7 +130,6 @@ EOF
 function createROSQtCreatorPluginPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/data
-    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc
 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -172,7 +169,6 @@ EOF
 
 function createPackage {
     mkdir -p $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta
-    OFFLINE_PACKAGES=$OFFLINE_PACKAGES,$BASE_PACKAGE_NAME.$PACKAGE_NAME
 
 cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -290,7 +286,7 @@ logP "Finished Creating Installer data for version 4.3.1"
 # Create binary 
 cd $INSTALLER_DIR_PATH
 /home/larmstrong/QtIFW-3.0.2/bin/binarycreator -f -c config/config.xml -p packages qtcreator-ros-offline-installer.run
+/home/larmstrong/QtIFW-3.0.2/bin/binarycreator -n -c config/config.xml -p packages qtcreator-ros-online-installer.run
 
-echo "Commands for updating and creating the online installer"
-echo "repogen -p /home/larmstrong/qtc_plugins/ros_qtc_plugin/installer-test/packages/ -i $OFFLINE_PACKAGES ."
-echo "binarycreator -c config/config.xml -n -p packages qtcreator-ros-online-installer.run"
+echo "Commands for updating server"
+echo "repogen -p /home/larmstrong/qtc_plugins/ros_qtc_plugin/installer-test/packages/ ."
