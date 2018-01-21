@@ -140,7 +140,7 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc/meta/pa
     <Description>Installs the ROS Qt Creator Plug-in</Description>
     <Version>$RQTC_MINOR_VERSION</Version>
     <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
-    <Name>org.rosindustrial.qtros.$PACKAGE_NAME.rqtc</Name>
+    <Name>$BASE_PACKAGE_NAME.$PACKAGE_NAME.rqtc</Name>
     <Dependencies>$BASE_PACKAGE_NAME.$PACKAGE_NAME.qtc</Dependencies>
     <Checkable>false</Checkable>
 </Package>
@@ -185,7 +185,7 @@ cat > $INSTALLER_DIR_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/meta/package
     <Description>Installs the Qt Creator IDE with ROS Plug-in</Description>
     <Version>$RQTC_MINOR_VERSION</Version>
     <ReleaseDate>$RQTC_RELEASE_DATE</ReleaseDate>
-    <Name>org.rosindustrial.qtros.$PACKAGE_NAME</Name>
+    <Name>$BASE_PACKAGE_NAME.$PACKAGE_NAME</Name>
     <Dependencies>$BASE_PACKAGE_NAME</Dependencies>
     <SortingPriority>$SortingPriority</SortingPriority>
     <Default>$CHECKBOX_DEFAULT</Default>
