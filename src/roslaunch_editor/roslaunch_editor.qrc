@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/roslaunch">
+        <file>ROSLaunchEditor.mimetypes.xml</file>
+    </qresource>
+</RCC>
