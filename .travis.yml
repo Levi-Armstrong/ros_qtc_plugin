@@ -13,7 +13,7 @@ before_install:
   - sudo apt-get install -y python-sphinx
   - pip install git+https://github.com/Lingnik/sphinxcontrib-versioning@Lingnik-patch-1
 script:
-  - wget https://github.com/Levi-Armstrong/ros_qtc_plugin/blob/master/installer/deploy_docs.sh
+  - wget https://github.com/Levi-Armstrong/ros_qtc_plugin/raw/master/installer/deploy_docs.sh
   - bash deploy_docs.sh
 env:
   global:
