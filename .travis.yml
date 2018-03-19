@@ -1,0 +1,21 @@
+language: python
+dist: xenial
+python:
+  - "2.7"
+branches:
+  except:
+  - master
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python
+  - sudo apt-get install -y python-setuptools python-dev build-essential
+  - sudo apt-get install -y python-pip
+  - sudo apt-get install -y python-sphinx
+  - pip install git+https://github.com/Lingnik/sphinxcontrib-versioning@Lingnik-patch-1
+script:
+  - wget https://github.com/Levi-Armstrong/ros_qtc_plugin/blob/master/installer/deploy_docs.sh
+  - bash deploy_docs.sh
+env:
+  global:
+  - ENCRYPTION_LABEL: "<.... encryption label from previous step ....>"
+  - COMMIT_AUTHOR_EMAIL: "levi.armstrong@gmail.com"
