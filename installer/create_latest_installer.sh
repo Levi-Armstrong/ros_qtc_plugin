@@ -9,16 +9,16 @@ DIR_PATH=`dirname $FILE_PATH`
 source "$DIR_PATH/installer_functions.sh"
 
 # Create Installer data for latest versions
-INSTALLER_VERSION=1.0.6 # This must be incremented for every new release
-INSTALLER_RELEASE_DATE=2019-05-01
+INSTALLER_VERSION=1.0.7 # This must be incremented for every new release
+INSTALLER_RELEASE_DATE=2019-05-20
 
 QTC_LATEST=1
 QTC_REPO="https://github.com/qt-creator/qt-creator.git"
 QTC_VERSION=4.8.2.0
 QTC_BRANCH=v4.8.2
 QTC_RELEASE_DATE=2019-03-01
-RQTC_VERSION=0.3.4.0
-RQTC_RELEASE_DATE=2019-05-01
+RQTC_VERSION=0.3.5.0
+RQTC_RELEASE_DATE=2019-05-20
 QTERMWIDGET_BRANCH="debian/xenial"
 SortingPriority=200
 
