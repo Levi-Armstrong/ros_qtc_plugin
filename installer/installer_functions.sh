@@ -401,7 +401,7 @@ function setupEnvironment {
     export QTC_SOURCE=$BASE_PATH/qt-creator
     export QTC_BUILD=$BASE_PATH/$INSTALL_DIR
     export LLVM_INSTALL_DIR=$BASE_PATH/libclang
-    #export QTC_ENABLE_CLANG_LIBTOOLING=true
+    export QTC_ENABLE_CLANG_LIBTOOLING=true
     export BUILD_CPLUSPLUS_TOOLS=true
     export INSTALL_ROOT=$BASE_PATH/$INSTALL_DIR
 }
