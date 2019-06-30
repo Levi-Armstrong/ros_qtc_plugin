@@ -257,6 +257,9 @@ function installDepends {
         make install || exit 1
     fi
 
+    ## Required for perfparser
+    apt install -y elfutils
+    apt install -y libdw-dev
 }
 
 function packageSystemLibraries {
@@ -271,8 +274,7 @@ function packageSystemLibraries {
         cp /usr/lib/gcc/x86_64-linux-gnu/4.9/libgcc_s.so .
         patchelf --force-rpath --set-rpath \$\ORIGIN:\$\ORIGIN/..:\$\ORIGIN/../lib/qtcreator:\$\ORIGIN/../../Qt/lib libstdc++.so.6
         patchelf --force-rpath --set-rpath \$\ORIGIN:\$\ORIGIN/..:\$\ORIGIN/../lib/qtcreator:\$\ORIGIN/../../Qt/lib libgcc_s.so
-    fi
-
+    fi 
 }
 
 function cloneQtCreator {
@@ -290,7 +292,10 @@ function buildQtCreator {
     cd $BASE_PATH/qt-creator-build
     qmake ../qt-creator/qtcreator.pro -r 
     make -j8 || exit 1
+    make docs || exit 1
+    make html_docs || exit 1
     make deployqt || exit 1
+    make install_docs || exit 1
 }
 
 function packageQtCreator {
@@ -404,6 +409,8 @@ function setupEnvironment {
     export QTC_ENABLE_CLANG_LIBTOOLING=true
     export BUILD_CPLUSPLUS_TOOLS=true
     export INSTALL_ROOT=$BASE_PATH/$INSTALL_DIR
+    export ELFUTILS_INSTALL_DIR=/usr/include/elfutils
+    export QT_INSTALL_DOCS=$INSTALL_ROOT/share/doc
 }
 
 function createInstallerData {
